@@ -141,7 +141,7 @@ PostgreSQL integration использует отдельный postgres-test и 
 
 ## GitHub Actions CI
 
-`.github/workflows/ci.yaml` запускается на pull request, push в master/main
+`.github/workflows/ci.yaml` запускается на pull request, push в main
 и вручную через workflow_dispatch. Право токена — только чтение репозитория.
 
 Первый job проверяет gofmt, go vet и тесты с race detector без БД.

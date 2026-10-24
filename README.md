@@ -1,6 +1,6 @@
 # Сервис сокращения ссылок
 
-[![CI](https://github.com/vladlim/url-shortener/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/vladlim/url-shortener/actions/workflows/ci.yaml?query=branch%3Amaster)
+[![CI](https://github.com/vladlim/url-shortener/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/vladlim/url-shortener/actions/workflows/ci.yaml?query=branch%3Amain)
 
 Go, Chi, PostgreSQL и Flyway. Мониторинг — Prometheus и Grafana.
 
@@ -119,7 +119,7 @@ docker compose --profile test stop postgres-test
 python3 scripts/smoke.py
 ```
 
-GitHub Actions (`.github/workflows/ci.yaml`) на PR и push в `master`/`main` проверяет
+GitHub Actions (`.github/workflows/ci.yaml`) на PR и push в `main` проверяет
 форматирование, `go vet`, тесты с `-race`, конфигурацию Prometheus и запуск стека
 с Flyway. CD не настроен.
 
