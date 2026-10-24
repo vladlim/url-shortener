@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Format, vet and unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Check formatting
+        run: |
+          files=$(gofmt -l cmd internal)
+          if [ -n "$files" ]; then
+            printf 'Run gofmt on:\n%s\n' "$files"
+            exit 1
+          fi
+      - name: Vet
+        run: go vet ./...
+      - name: Unit tests with race detector
+        run: go test -race -count=1 -timeout=2m ./...
+
+  integration:
+    name: PostgreSQL integration and full stack
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: checks
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure isolated CI stack
+        run: cp .env.example .env
+      - name: Integration tests with race detector
+        run: docker compose --profile test run --build --rm tests
+      - name: Validate Prometheus configuration
+        run: >-
+          docker compose run --rm --no-deps --entrypoint promtool prometheus
+          check config /etc/prometheus/prometheus.yaml
+      - name: Start application and apply Flyway migrations
+        run: docker compose up --build -d app
+      - name: Verify HTTP API
+        run: python3 scripts/smoke.py
+      - name: Verify migration rerun
+        run: docker compose run --rm flyway migrate
+      - name: Collect logs
+        if: always()
+        run: |
+          mkdir -p ci-logs
+          docker compose --profile test ps -a > ci-logs/containers.txt 2>&1
+          docker compose --profile test logs --no-color > ci-logs/compose.log 2>&1
+      - name: Upload diagnostic logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-logs
+          path: ci-logs/
+          retention-days: 7
+      - name: Stop isolated stack
+        if: always()
+        run: docker compose --profile test down --volumes --remove-orphans

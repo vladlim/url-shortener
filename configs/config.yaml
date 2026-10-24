@@ -1,0 +1,14 @@
+server:
+  request_timeout: 5s
+  read_timeout: 5s
+  read_header_timeout: 2s
+  write_timeout: 10s
+  idle_timeout: 60s
+
+shorten:
+  default_ttl: 24h
+
+cleanup:
+  interval: 1m
+  timeout: 10s
+  batch_size: 1000

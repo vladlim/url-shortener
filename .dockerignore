@@ -1,0 +1,6 @@
+.git
+.env
+.env.*
+*.log
+README.md
+docker-compose.yaml
